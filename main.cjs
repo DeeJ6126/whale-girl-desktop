@@ -12,6 +12,19 @@
 //  - size presets 75/100/125/150/200% via right-click menu, persisted
 //  - position persistence; `--screenshot=<path>` captures the window for tests
 const { app, BrowserWindow, screen, Menu, ipcMain } = require('electron')
+
+// Single instance: a second launch (e.g. from a startup script while the pet is
+// already running) focuses the existing window instead of spawning a duplicate.
+const gotLock = app.requestSingleInstanceLock()
+if (!gotLock) {
+  app.quit()
+}
+app.on('second-instance', () => {
+  if (win && !win.isDestroyed()) {
+    if (win.isMinimized()) win.restore()
+    win.focus()
+  }
+})
 const fs = require('node:fs')
 const path = require('node:path')
 
