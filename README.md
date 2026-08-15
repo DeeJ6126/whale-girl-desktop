@@ -1,108 +1,84 @@
 # whale-girl-desktop
 
-A desktop companion pet for DeepSeek Harness — the whale-girl (鲸鱼娘) floating
-on your screen, reacting to your DSH sessions: thinking, waiting, celebrating,
-sleeping, with a live session bubble above her.
+[English](README.en.md) | **中文**
 
-## What you need (three pieces, in order)
+一个 DeepSeek Harness 的桌面伴侣宠物——鲸鱼娘浮在你的屏幕上,实时跟随 DSH 会话状态:思考、等待、庆祝、打盹,头顶还有当前运行会话的气泡。
+
+## 需要什么(三件套,按顺序)
 
 ```
-① DeepSeek Harness (dsh web)          the runtime
-② whale-girl plugin (with sessions)   provides /whale-girl/state · /presence · /assets/* · /sessions
-③ this desktop shell                  the always-on-top pet window
+① DeepSeek Harness (dsh web)          运行环境
+② whale-girl 插件(带 sessions 端点)    提供 /whale-girl/state · /presence · /assets/* · /sessions
+③ 本桌面壳                             置顶悬浮宠物窗口
 ```
 
-- **whale-girl plugin**: install the version that exposes `/whale-girl/sessions`
-  (the per-session endpoint this pet's bubbles depend on):
+- **whale-girl 插件**:安装带 `/whale-girl/sessions`(本宠物气泡依赖的每会话端点)的版本:
 
   ```sh
   dsh plugin --profile web add github:xiaoshihou514/whale-girl#codex/external-state-api
-  # after the upstream sessions PR merges, switch to the official source:
+  # 上游 sessions PR 合并后,可切回官方源:
   # dsh plugin --profile web add github:vlln/whale-girl
   ```
 
-  Restart `dsh web` after installing, then verify:
-  `curl http://127.0.0.1:3080/whale-girl/sessions` returns session rows.
+  装完重启 `dsh web`,然后验证:
+  `curl http://127.0.0.1:3080/whale-girl/sessions` 能返回会话列表。
 
-- **Node.js** (>= 22) and **Electron**.
+- **Node.js**(>= 22)和 **Electron**。
 
-## Install & run
+## 安装与运行
 
 ```sh
-npm install          # installs Electron
+npm install          # 安装 Electron
 npm start
-# or: .\node_modules\.bin\electron.cmd .
+# 或:.\node_modules\.bin\electron.cmd .
 ```
 
-> **Electron binary download stalls?** On networks where the default GitHub
-> release download hangs, use the npmmirror mirror:
+> **Electron 二进制下载卡住?** 网络直连 GitHub release 不稳时,用 npmmirror 镜像:
 >
 > ```sh
 > set ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/
 > node node_modules\electron\install.js
 > ```
 
-The pet floats bottom-right, always on top:
+宠物悬浮在右下角、始终置顶:
 
-- **Click** toggles the embedded DSH web window (`http://127.0.0.1:3080`) — a
-  second hidden window, never the service itself.
-- **Right-click** opens the size menu: 75 / 100 / 125 / 150 / 200% (persisted).
-- **Drag** to move it (position remembered).
-- Above the pet, one message bubble per **running** session: title + current
-  action (深度思考中 / 运行命令行中 / 执行工具 / 等待批准); a finished
-  session's bubble disappears.
-- While online it heartbeats `POST /whale-girl/presence` every 15s, so the
-  in-page web pet hides itself (no double pets); on quit the web pet returns.
+- **单击** 切换内嵌的 DSH 网页窗口(`http://127.0.0.1:3080`)——是第二个隐藏窗口,绝不停服务。
+- **右键** 打开尺寸菜单:75 / 100 / 125 / 150 / 200%(持久化)。
+- **拖拽** 移动(位置会记住)。
+- 宠物上方,**每个运行中的会话**一个消息气泡:标题 + 当前动作(深度思考中 / 运行命令行中 / 执行工具 / 等待批准);会话结束气泡消失。
+- 在线期间每 15s 心跳 `POST /whale-girl/presence`,网页宠物自动隐藏(不双宠);退出时网页宠物即刻恢复。
 
-## Development / debug
+## 开发 / 调试
 
 ```sh
-.\node_modules\.bin\electron.cmd . --screenshot=pet.png            # capture after 5s and quit
-.\node_modules\.bin\electron.cmd . --screenshot=pet.png --screenshot-delay=70000  # sleep test
-.\node_modules\.bin\electron.cmd . --sleep-after=8000              # shorten idle→sleep for tests
-.\node_modules\.bin\electron.cmd . --web-shot=web.png              # capture the embedded web window
-.\node_modules\.bin\electron.cmd . --base-url=http://127.0.0.1:3999  # poll a mock DSH (tests/mock-dsh.cjs)
-.\node_modules\.bin\electron.cmd . --dev                           # forward renderer console
+.\node_modules\.bin\electron.cmd . --screenshot=pet.png            # 5 秒后截图并退出
+.\node_modules\.bin\electron.cmd . --screenshot=pet.png --screenshot-delay=70000  # 打盹测试
+.\node_modules\.bin\electron.cmd . --sleep-after=8000              # 缩短空闲→打盹阈值(测试用)
+.\node_modules\.bin\electron.cmd . --web-shot=web.png              # 截内嵌网页窗口
+.\node_modules\.bin\electron.cmd . --base-url=http://127.0.0.1:3999  # 轮询 mock DSH(tests/mock-dsh.cjs)
+.\node_modules\.bin\electron.cmd . --dev                           # 转发渲染器控制台
 ```
 
-## Layout
+## 目录结构
 
 ```
-main.cjs        Electron main: windows, state+sessions poll, presence heartbeat,
-                size presets, click-to-toggle web window, manual drag
-preload.cjs     exposes window.pet (onState / onManifest / onScale / onSessions /
-                toggleWeb / openMenu / dragStart / dragMove / dragEnd)
-renderer/       index.html + renderer.js: sprite animation driver + session bubbles
-tests/          mock-dsh.cjs — deterministic mock DSH server for credential-free screenshots
+main.cjs        Electron 主进程:窗口、state+sessions 轮询、心跳、尺寸预设、点击切换网页窗口、手动拖拽
+preload.cjs     暴露 window.pet(onState / onManifest / onScale / onSessions / toggleWeb / openMenu / dragStart / dragMove / dragEnd)
+renderer/       index.html + renderer.js:精灵动画驱动 + 会话气泡
+tests/          mock-dsh.cjs —— 确定性 mock DSH 服务器(免凭据截图验证用)
 ```
 
-## Notes
+## 实现说明
 
-- The renderer is a `file://` page; the main process (plain Node) does all DSH
-  API calls and ships snapshots, the manifest, scale and session lists over IPC
-  (CORS-free). Sprite sheets are loaded from
-  `http://127.0.0.1:3080/whale-girl/assets/characters/<character>/<sheet>`.
-- `contextIsolation` is off so the preload can expose `window.pet` in the
-  renderer's world (contextBridge callback crossing proved unreliable here).
-  The app loads only local files and talks only to loopback DSH.
-- The window is manually dragged over IPC instead of `-webkit-app-region: drag`
-  because a draggable region swallows clicks; a press that moves less than 5px
-  is treated as a click.
+- 渲染器是 `file://` 页面;所有 DSH API 调用走主进程(Node fetch 无 CORS),快照/清单/缩放/会话列表经 IPC 下发。精灵图从 `http://127.0.0.1:3080/whale-girl/assets/characters/<角色>/<sheet>` 加载。
+- `contextIsolation` 关闭,以便 preload 直接挂 `window.pet`(contextBridge 回调跨隔离世界会静默失效)。应用只加载本地文件、只访问环回 DSH。
+- 窗口用手动拖拽 IPC 代替 `-webkit-app-region: drag`(拖拽区会吞掉点击);按下后移动 <5px 判定为单击。
 
-## Credits
+## 署名
 
-- Built on the whale-girl plugin ecosystem:
-  [vlln/whale-girl](https://github.com/vlln/whale-girl) — external-consumer API
-  contract (MIT, © Sam Gao (vlln)); per-session endpoint contributed in
-  [xiaoshihou514/whale-girl](https://github.com/xiaoshihou514/whale-girl)
-  (`codex/external-state-api`).
-- Pet character「鲸鱼娘」: original by
-  [上善](https://www.pixiv.net/users/62155430), redesign
-  [ZipZipPipe](https://space.bilibili.com/4168597). Sprite sheets are loaded at
-  runtime from the whale-girl plugin; this repository contains no character
-  artwork.
+- 基于 whale-girl 插件生态:[vlln/whale-girl](https://github.com/vlln/whale-girl) 的外部消费者 API 契约(MIT,© Sam Gao (vlln));每会话端点在 [xiaoshihou514/whale-girl](https://github.com/xiaoshihou514/whale-girl)(`codex/external-state-api`)。
+- 角色「鲸鱼娘」:原作 [上善](https://www.pixiv.net/users/62155430),二创设计 [ZipZipPipe](https://space.bilibili.com/4168597)。精灵素材运行时从 whale-girl 插件加载,**本仓库不含任何角色美术**。
 
-## License
+## 许可证
 
-MIT. See [LICENSE](LICENSE). Character artwork is licensed by its authors as
-declared in the whale-girl project; this shell does not redistribute it.
+MIT,见 [LICENSE](LICENSE)。角色美术归其作者按 whale-girl 项目声明授权;本壳不重新分发。
