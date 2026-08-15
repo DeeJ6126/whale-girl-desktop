@@ -12,12 +12,10 @@
 ③ 本桌面壳                             置顶悬浮宠物窗口
 ```
 
-- **whale-girl 插件**:安装带 `/whale-girl/sessions`(本宠物气泡依赖的每会话端点)的版本:
+- **whale-girl 插件**:安装官方源即可——外部消费者 API(PR #1)与每会话端点(PR #5)均已合入 vlln main:
 
   ```sh
-  dsh plugin --profile web add github:xiaoshihou514/whale-girl#codex/external-state-api
-  # 上游 sessions PR 合并后,可切回官方源:
-  # dsh plugin --profile web add github:vlln/whale-girl
+  dsh plugin --profile web add github:vlln/whale-girl
   ```
 
   装完重启 `dsh web`,然后验证:

@@ -14,13 +14,12 @@ sleeping, with a live session bubble above her.
 ③ this desktop shell                  the always-on-top pet window
 ```
 
-- **whale-girl plugin**: install the version that exposes `/whale-girl/sessions`
-  (the per-session endpoint this pet's bubbles depend on):
+- **whale-girl plugin**: install the official source — the external-consumer
+  API (PR #1) and the per-session endpoint (PR #5) are both merged into vlln
+  `main`:
 
   ```sh
-  dsh plugin --profile web add github:xiaoshihou514/whale-girl#codex/external-state-api
-  # after the upstream sessions PR merges, switch to the official source:
-  # dsh plugin --profile web add github:vlln/whale-girl
+  dsh plugin --profile web add github:vlln/whale-girl
   ```
 
   Restart `dsh web` after installing, then verify:
