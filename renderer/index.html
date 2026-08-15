@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
+    body {
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+      width: 100vw; height: 100vh;
+    }
+    #bubbles {
+      display: flex; flex-direction: column; align-items: stretch; gap: 4px;
+      width: calc(100% - 16px); margin: 8px 8px 4px;
+    }
+    .bubble {
+      background: rgba(18, 26, 48, 0.88);
+      border: 1px solid rgba(120, 160, 255, 0.45);
+      border-radius: 8px;
+      padding: 4px 8px;
+      color: #eaf2ff;
+      font: 11px/1.4 system-ui, sans-serif;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .bubble-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bubble-action { opacity: 0.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    canvas { -webkit-user-select: none; }
+  </style>
+</head>
+<body>
+  <div id="bubbles"></div>
+  <canvas id="pet"></canvas>
+  <script src="./renderer.js"></script>
+</body>
+</html>
