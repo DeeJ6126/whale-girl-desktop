@@ -49,6 +49,22 @@ http.createServer((req, res) => {
     res.end(JSON.stringify(stateFor(act)))
     return
   }
+  if (url.pathname === '/whale-girl/interact' && req.method === 'POST') {
+    let body = ''
+    req.on('data', (chunk) => { body += chunk })
+    req.on('end', () => {
+      let action = 'feed'
+      try { action = JSON.parse(body).action } catch { /* keep default */ }
+      const replies = {
+        feed: ['「啊呜——谢谢投喂！」', '「好好吃，能量满满！」', '「嘻嘻，投喂成功！」'],
+        play: ['「嘿嘿，再来一次！」', '「玩得好开心～」', '「我赢了！再来！」'],
+      }
+      const pool = replies[action] || replies.feed
+      res.writeHead(200, { 'content-type': 'application/json' })
+      res.end(JSON.stringify({ pet: stateFor('idle'), reply: pool[0] }))
+    })
+    return
+  }
   if (url.pathname === '/whale-girl/sessions') {
     const n = FIXED_SESSIONS !== null ? FIXED_SESSIONS : Number(url.searchParams.get('sessions') || 0)
     res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' })

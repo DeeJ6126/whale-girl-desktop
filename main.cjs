@@ -10,6 +10,8 @@
 //  - click-to-toggle embedded DSH web window (second BrowserWindow, hidden
 //    until the pet is clicked; never touches the DSH service itself)
 //  - size presets 75/100/125/150/200% via right-click menu, persisted
+//  - feed/play interaction proxy POST /whale-girl/interact (menu items ->
+//    eat/play animation + reply bubble in the renderer)
 //  - position persistence; `--screenshot=<path>` captures the window for tests
 const { app, BrowserWindow, screen, Menu, ipcMain } = require('electron')
 
@@ -33,6 +35,7 @@ const BASE = BASE_ARG ? BASE_ARG.slice('--base-url='.length) : 'http://127.0.0.1
 const STATE_URL = `${BASE}/whale-girl/state`
 const SESSIONS_URL = `${BASE}/whale-girl/sessions`
 const PRESENCE_URL = `${BASE}/whale-girl/presence`
+const INTERACT_URL = `${BASE}/whale-girl/interact`
 const POLL_MS = 1500
 const HEARTBEAT_MS = 15000
 const PET_SIZE = 110
@@ -109,6 +112,22 @@ async function pokePresence(online) {
       signal: AbortSignal.timeout(3000),
     })
   } catch { /* DSH may be down; heartbeat resumes on the next interval */ }
+}
+
+/** Interaction (feed/play parity with the official web client): POST /interact
+ *  and forward the pet's reply to the renderer for its bubble + eat/play/joy. */
+async function postInteract(action) {
+  try {
+    const res = await fetch(INTERACT_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ action }),
+      signal: AbortSignal.timeout(3000),
+    })
+    if (!res.ok || !win || win.isDestroyed()) return
+    const body = await res.json()
+    win.webContents.send('pet-interact-result', { action, reply: body?.reply })
+  } catch { /* DSH down; an interaction simply has no effect */ }
 }
 
 /** Resize the pet window to the current scale + bubble count, keeping the bottom edge fixed. */
@@ -207,6 +226,9 @@ function showMenu() {
       click: () => setScale(s),
     })),
     { type: 'separator' },
+    { label: '🍗 喂食', click: () => postInteract('feed') },
+    { label: '🎾 玩耍', click: () => postInteract('play') },
+    { type: 'separator' },
     { label: '打开 / 隐藏网页窗口', click: toggleWeb },
     { type: 'separator' },
     { label: '退出', click: () => app.quit() },
@@ -217,6 +239,9 @@ function showMenu() {
 // ---- IPC (renderer -> main) ----
 ipcMain.on('pet-toggle-web', toggleWeb)
 ipcMain.on('pet-menu', showMenu)
+ipcMain.on('pet-interact', (_event, action) => {
+  if (action === 'feed' || action === 'play') postInteract(action)
+})
 ipcMain.on('pet-drag-start', (_event, pos) => {
   if (!win || win.isDestroyed()) return
   dragState = { mouseX: pos.x, mouseY: pos.y, winX: win.getPosition()[0], winY: win.getPosition()[1] }
@@ -290,13 +315,20 @@ const sleepAfterMs = sleepAfterArg ? Number(sleepAfterArg.slice('--sleep-after='
 // load, captures it to <path> and quits — verifies B1 without a manual click.
 const webShotFlag = process.argv.find((arg) => arg.startsWith('--web-shot='))
 
+// Debug: --interact-test triggers one feed interaction after load so screenshots
+// capture the eat animation + reply bubble + joy without a manual menu click.
+const interactTestFlag = process.argv.includes('--interact-test')
+
 app.whenReady().then(() => {
   createWindow()
   heartbeatLoop()
   pollLoop()
-  if (sleepAfterMs !== null && sleepAfterMs > 0 && win) {
+  if (win) {
     win.webContents.on('did-finish-load', () => {
-      win.webContents.send('pet-debug', { sleepAfterMs })
+      const debug = {}
+      if (sleepAfterMs !== null && sleepAfterMs > 0) debug.sleepAfterMs = sleepAfterMs
+      if (interactTestFlag) debug.interactTest = true
+      if (Object.keys(debug).length > 0) win.webContents.send('pet-debug', debug)
     })
   }
   if (webShotFlag) {

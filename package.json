@@ -1,6 +1,6 @@
 {
   "name": "whale-girl-desktop",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Desktop companion pet for DeepSeek Harness (whale-girl), driven by the /whale-girl external-consumer API",
   "main": "main.cjs",
