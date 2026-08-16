@@ -14,7 +14,7 @@ if errorlevel 1 (
 )
 
 echo [1/3] checking DSH web on 127.0.0.1:3080 ...
-curl -s -o nul -m 3 http://127.0.0.1:3080
+curl -s -o NUL -m 3 http://127.0.0.1:3080
 if errorlevel 1 (
   echo   WARN: DSH web is not running. Start it first (the pet needs it).
   echo   Press any key to continue anyway, or close this window.
@@ -24,9 +24,9 @@ if errorlevel 1 (
 echo [2/3] checking whale-girl /sessions endpoint ...
 curl -s -m 3 http://127.0.0.1:3080/whale-girl/sessions | findstr /c:"activity" >nul
 if errorlevel 1 (
-  echo   WARN: /whale-girl/sessions not available. Install the whale-girl plugin
-  echo   with the sessions endpoint, then restart dsh:
-  echo     dsh plugin --profile web add github:xiaoshihou514/whale-girl#codex/external-state-api
+  echo   WARN: /whale-girl/sessions not available. Install the whale-girl
+  echo   plugin (official source), then restart dsh:
+  echo     dsh plugin --profile web add github:vlln/whale-girl
   echo   Press any key to continue anyway.
   pause
 )
